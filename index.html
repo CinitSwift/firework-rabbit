@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>FIREWORK</title>
 </head>
 <style>
     * {
@@ -78,14 +78,7 @@
 
     overlay.addEventListener('click', () => {
         overlay.classList.add('hide');
-        // 点击后强制重新计算尺寸，防止黑屏喵！
-        resize();
         bgMusic.play().catch(e => console.error("音频播放失败喵:", e));
-
-        // 500ms 后彻底移除遮罩，不占用渲染资源
-        setTimeout(() => {
-            overlay.style.display = 'none';
-        }, 500);
     });
     const canvas = document.getElementById('canvas');
     const gl = canvas.getContext('webgl2');
@@ -112,7 +105,7 @@
 `;
 
     const fragPrefix = `#version 300 es
-  precision mediump float;
+  precision highp float;
 
   uniform float iTime;
   uniform vec2 iResolution;
@@ -310,9 +303,15 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
             time += 0.01;
         } else {
             time = t * 0.001;
-
         }
+
+        // 每一帧都确保视口对齐最新的 canvas 尺寸，防止部分设备因初始化延迟导致的左下角偏移喵！
+        if (canvas.width !== gl.drawingBufferWidth || canvas.height !== gl.drawingBufferHeight) {
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
         gl.uniform1f(iTime, time);
+        // 传递 canvas 的逻辑尺寸，而不是像素尺寸，这能解决高分屏下的偏移问题喵！
         gl.uniform2f(iResolution, canvas.width, canvas.height);
         gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
 
