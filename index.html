@@ -78,7 +78,14 @@
 
     overlay.addEventListener('click', () => {
         overlay.classList.add('hide');
+        // 点击后强制重新计算尺寸，防止黑屏喵！
+        resize();
         bgMusic.play().catch(e => console.error("音频播放失败喵:", e));
+
+        // 500ms 后彻底移除遮罩，不占用渲染资源
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
     });
     const canvas = document.getElementById('canvas');
     const gl = canvas.getContext('webgl2');
