@@ -8,10 +8,25 @@
     * {
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
     }
-    html, div, #app {
-        width: 100vw;
-        height: 100vh;
+    html, body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+    }
+    #app {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
     }
 </style>
 <body>
@@ -20,6 +35,22 @@
 </div>
 </body>
 <script>
+    const canvas = document.getElementById('canvas');
+    const gl = canvas.getContext('webgl2');
+
+    function resize() {
+        const dpr = window.devicePixelRatio || 1;
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+
+        gl.viewport(0, 0, canvas.width, canvas.height);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
     const vert = `#version 300 es
   in vec4 a_position;
   void main () {
@@ -44,24 +75,11 @@
 #define PARTICLE_NUMS 50.0
 #define EXPLOSION_NUMS 5.0
 
-
 vec2 Hash12(float f) {
     float a = fract(sin(f * 3456.12) * 7529.12);
     float b = fract(sin(a + f * 123.789) * 2346.67);
     return vec2(a, b);
 }
-
-vec2 Hash12Polar(float f) {
-    float rad = fract(sin(f * 3456.12) * 7529.12) * 3.1415926 * 2.0;
-    float r = fract(sin((rad + f) * 714.57) * 567.234);
-
-    float x = cos(rad);
-    float y = sin(rad);
-    return vec2(x, y) * r;
-
-}
-
-
 
 float Explosion(vec2 uv, float t) {
     float spark = 0.0;
@@ -204,15 +222,6 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         return program;
     }
 
-
-    const canvas = document.getElementById('canvas');
-
-    canvas.style.width = document.body.clientWidth + 'px';
-    canvas.style.height = document.body.clientHeight + 'px';
-    /**
-     * @type WebGLRenderingContext
-     */
-    const gl = canvas.getContext('webgl2');
 
     const program = initWebGL(gl, vert, frag);
 
