@@ -78,14 +78,21 @@
 
     overlay.addEventListener('click', () => {
         overlay.classList.add('hide');
+        // 点击后强制重新计算尺寸，防止黑屏喵！
+        resize();
         bgMusic.play().catch(e => console.error("音频播放失败喵:", e));
+
+        // 500ms 后彻底移除遮罩，不占用渲染资源
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 500);
     });
     const canvas = document.getElementById('canvas');
     const gl = canvas.getContext('webgl2');
 
     function resize() {
-        // 限制最高 DPR 为 2，防止高分屏下渲染像素过多导致卡顿喵～
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        // 极致性能模式：限制最高 DPR 为 1.0，在高分屏下牺牲一点清晰度以换取极致流畅喵！
+        const dpr = 1;
         const width = window.innerWidth;
         const height = window.innerHeight;
 
@@ -105,7 +112,7 @@
 `;
 
     const fragPrefix = `#version 300 es
-  precision highp float;
+  precision mediump float;
 
   uniform float iTime;
   uniform vec2 iResolution;
@@ -119,7 +126,7 @@
 `
     const frag = fragPrefix + `
 #define PARTICLE_NUMS 50.0
-#define EXPLOSION_NUMS 4.0
+#define EXPLOSION_NUMS 3.0
 
 vec2 Hash12(float f) {
     float a = fract(sin(f * 3456.12) * 7529.12);
